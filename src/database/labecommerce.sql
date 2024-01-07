@@ -35,3 +35,30 @@ VALUES
     ('p003', 'Teclado', 120.00, 'Melhor marca do mercado', 'https://picsum.photos/seed/Monitor/400');
 
 SELECT * FROM products;
+
+SELECT * FROM users;
+
+SELECT * FROM products;
+
+SELECT * FROM products
+WHERE name LIKE '%gamer%';
+
+INSERT INTO users (id, name, email, password, created_at)
+VALUES ('U004', 'Erik', 'erik@email.com', 'erik1234', CURRENT_TIMESTAMP);
+
+INSERT INTO products (id, name, price, description, image_url)
+VALUES ('p004', 'Notebook', 3500, 'Notebook ótimo custo-benefício', 'https://www.kabum.com.br/?product=produto');
+
+DELETE FROM users
+WHERE id = 'U004'
+
+DELETE FROM products
+WHERE id = 'p004';
+
+UPDATE products
+SET 
+    name = 'Monitor (alterado)',
+    price = 990.90,
+    description = 'Monitor Led Full HD 24 polegadas alterado',
+    image_url = 'https://www.kabum.com.br/busca/mouse-redragon'
+WHERE id = 'p002';
