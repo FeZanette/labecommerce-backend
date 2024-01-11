@@ -67,14 +67,16 @@ CREATE TABLE purchases (
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
     buyer TEXT NOT NULL,
     total_price REAL NOT NULL,
-    created_at TEXT NOT NULL TIMESTAMP,
-    FOREIGN KEY (buyer) REFERENCES users(id);
-)
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (buyer) REFERENCES users(id)
+);
+
+DROP TABLE purchases;
 
 INSERT INTO purchases (id, buyer, total_price, created_at)
 VALUES
-    ('p001', 'u001', 299.99, CURRENT_TIMESTAMP),
-    ('p002', 'u002', 99.99, CURRENT_TIMESTAMP);
+    ('pur001', 'u001', 299.99, CURRENT_TIMESTAMP),
+    ('pur002', 'u002', 99.99, CURRENT_TIMESTAMP);
 
 UPDATE purchases
 SET total_price = 1299.99
@@ -90,3 +92,33 @@ SELECT
 FROM purchases
 INNER JOIN users
 ON purchases.buyer = users.id;
+
+-- RELAÇÕES SQL II
+
+-- EXERCÍCIO 1
+
+CREATE TABLE purchases_products (
+    purchase_id TEXT NOT NULL,
+    product_id TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    FOREIGN KEY (purchase_id) REFERENCES purchases(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+);
+
+DROP TABLE purchases_products;
+
+-- EXERCÍCIO 2
+
+INSERT INTO purchases_products (purchase_id, product_id, quantity)
+VALUES
+    ('pur001', 'p001', 3),
+    ('pur002', 'p002', 5),
+    ('pur002', 'p003', 7);
+
+SELECT * FROM purchases_products
+INNER JOIN purchases
+ON purchases_products.purchase_id = purchases.id
+INNER JOIN products
+ON purchases_products.product_id = products.id;
