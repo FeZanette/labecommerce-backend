@@ -3,7 +3,7 @@ export type TUser = {
     name: string,
     email: string,
     password: string,
-    createdAt: string
+    created_at: string
 }
 
 export type TProduct = {
@@ -14,3 +14,9 @@ export type TProduct = {
     imageUrl: string
 }
 
+export type TPurchase = {
+    id: string,
+    buyer: string,
+    totalPrice: number,
+    createdAt: string
+}
