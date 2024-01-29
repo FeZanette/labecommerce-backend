@@ -10,7 +10,13 @@ import {
 } from "./database";
 import express, { Request, Response } from "express";
 import cors from "cors";
-import { ProductsToBuy, TProduct, TPurchase, TPurchasesProducts, TUser } from "./types";
+import {
+  ProductsToBuy,
+  TProduct,
+  TPurchase,
+  TPurchasesProducts,
+  TUser,
+} from "./types";
 import { Tracing } from "trace_events";
 import { db } from "./database/knex";
 import { log } from "console";
@@ -740,7 +746,6 @@ app.delete("/products/:id", async (req: Request, res: Response) => {
   }
 });
 
-
 // ____________________________________________________________________________________________
 // PURCHASES ENDPOINTS
 
@@ -836,213 +841,92 @@ app.get("/purchases/:id", async (req: Request, res: Response) => {
 
 // -- Create Purchase --
 
-app.post("/purchases", async (req: Request, res: Response) => {
-  try {
+// app.post("/purchases", async (req: Request, res: Response) => {
+//   try {
+//     // const id = req.body.id as string;
+//     // const buyer = req.body.buyer as string;
+//     // const total_price = req.body.totalPrice as number;
+//     // if (id === undefined || buyer === undefined || total_price === undefined) {
+//     //   // verifica se todos os elementos do body estão sendo passados
+//     //   res.status(400);
+//     //   throw new Error(
+//     //     "O body precisa ter todos os atributos: 'id', 'name', 'email' e 'password'"
+//     //   );
+//     // }
+//     // if (id !== undefined) {
+//     //   if (typeof id !== "string") {
+//     //     res.status(400);
+//     //     throw new Error("'id' inválido. Deve ser uma string");
+//     //   }
+//     //   const resultUser = users.find((user) => user.id === id);
+//     //   if (resultUser) {
+//     //     res.status(400);
+//     //     throw new Error("Esse id já existe");
+//     //   }
+//     // }
+//     // if (buyer !== undefined) {
+//     //   if (typeof buyer !== "string") {
+//     //     res.status(400);
+//     //     throw new Error("'buyer' inválido. Deve ser uma string");
+//     //   }
+//     //   if (buyer.length < 2) {
+//     //     res.status(400);
+//     //     throw new Error("'buyer' inválido. Deve ter no mínimo 2 caracteres");
+//     //   }
+//     // }
+//     // if (email !== undefined) {
+//     //   if (typeof email !== "string") {
+//     //     res.status(400);
+//     //     throw new Error("'email' inválido. Deve ser uma string");
+//     //   }
+//     //   const resultEmail = users.find((user) => user.email === email);
+//     //   if (resultEmail) {
+//     //     res.status(400);
+//     //     throw new Error("Esse e-mail já existe");
+//     //   }
+//     // }
+//     // if (password !== undefined) {
+//     //   if (typeof password !== "string") {
+//     //     res.statusCode = 400;
+//     //     throw new Error("'password' inválido. Deve ser uma string");
+//     //   }
+//     //   if (
+//     //     !password.match(
+//     //       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,12}$/g
+//     //     )
+//     //   ) {
+//     //     res.statusCode = 400;
+//     //     throw new Error(
+//     //       "'password' deve possuir entre 8 e 12 caracteres, com letras maiúsculas e minúsculas, no mínimo um número e um caractere especial"
+//     //     );
+//     //   }
+//     // }
+//     // const createAt = new Date().toISOString();
+//     // const newUser = {
+//     //   id: id,
+//     //   name: name,
+//     //   email: email,
+//     //   password: password,
+//     //   created_at: createAt,
+//     // };
+//     // // await db.raw(`
+//     // //   INSERT INTO users (id, name, email, password, created_at)
+//     // //   VALUES ("${id}", "${name}", "${email}", "${password}", "${createAt}");
+//     // // `);
+//     // await db("users").insert(newUser);
+//     // res.status(201).send("Cadastro realizado com sucesso");
+//   } catch (error) {
+//     if (res.statusCode === 200) {
+//       res.status(500);
+//     }
 
-    const id = req.body.id as string
-        const buyer = req.body.buyer as string
-        const products = req.body.products as ProductsToBuy[]
-
-        if (!id || !buyer) {
-            res.status(404)
-            throw new Error("'id' ou 'buyer' devem ser obrigatórios")
-        }
-
-        if (!products || products.length === 0) {
-            res.status(404)
-            throw new Error("'products' deve ser obrigatório e não pode estar vazio")
-        }
-
-        if (typeof id !== "string" || typeof buyer !== "string") {
-            res.status(404)
-            throw new Error("'id' ou 'buyer' devem ser string")
-        }
-
-        if (id[0] !== "p") {
-            res.status(404)
-            throw new Error("'id' deve iniciar com a letra 'p'")
-        }
-
-        const [findId] = await db("purchases").where({ id })
-        if (findId) {
-            res.status(404)
-            throw new Error("'id' já cadastrada")
-        }
-
-        const [findBuyer] = await db("users").where({ id: buyer })
-        if (!findBuyer) {
-            res.status(404)
-            throw new Error("Usuário (buyer) não cadastrado")
-        }
-
-        products.map((product) => {
-            if (!product.productId || typeof product.productId !== "string") {
-                res.status(404)
-                throw new Error("'id' do produto deve ser string")
-            }
-
-            if (!product.quantity || typeof product.quantity !== "number") {
-                res.status(404)
-                throw new Error("'quantity' deve ser number")
-            }
-        })
-
-        for (const i in products) {
-            const [findProduct] = await db("products").where({ id: products[i].productId })
-            if (!findProduct) {
-                res.status(404)
-                throw new Error(`O produto ${products[i].productId} não foi encontrado`);
-            }
-        }
-
-        for (const i in products) {
-            const newPurchase = {
-                purchase_id: id,
-                product_id: products[i].productId,
-                quantity: products[i].quantity
-            }
-            await db("purchases_products").insert(newPurchase)
-        }
-
-        const cart = await db("purchases_products").where({ purchase_id: id })
-        let totalPrice = 0
-
-        const newPurchase = {
-            id: cart[0].purchase_id,
-            buyer: buyer,
-            total_price: totalPrice
-        }
-
-        for (const product of cart) {
-            const [productInCart] = await db("products").where({ id: product.product_id })
-            totalPrice += product.quantity * productInCart.price
-        }
-
-        newPurchase.total_price = totalPrice
-
-        await db("purchases").insert(newPurchase)
-
-        const purchasedProducts: {}[] = []
-        for (const i of cart) {
-            const [productInCart] = await db("products").where({ id: i.product_id })
-            purchasedProducts.push({
-                id: productInCart.id,
-                name: productInCart.name,
-                price: productInCart.price,
-                description: productInCart.description,
-                imageUrl: productInCart.image_url,
-                quantity: i.quantity
-            })
-        }
-
-        const [createdPurchased] = await db("purchases").where({ id })
-        const styledPurchased = {
-            id: createdPurchased.id,
-            buyer: createdPurchased.buyer,
-            totalPrice: createdPurchased.total_price,
-            products: purchasedProducts
-        }
-
-
-        res.status(201).send({
-            message: "Pedido cadastrado com sucesso!",
-            purchased: styledPurchased
-        })
-    
-
-    // const id = req.body.id as string;
-    // const buyer = req.body.buyer as string;
-    // const total_price = req.body.totalPrice as number;
-
-    // if (id === undefined || buyer === undefined || total_price === undefined) {
-    //   // verifica se todos os elementos do body estão sendo passados
-    //   res.status(400);
-    //   throw new Error(
-    //     "O body precisa ter todos os atributos: 'id', 'name', 'email' e 'password'"
-    //   );
-    // }
-
-    // if (id !== undefined) {
-    //   if (typeof id !== "string") {
-    //     res.status(400);
-    //     throw new Error("'id' inválido. Deve ser uma string");
-    //   }
-
-    //   const resultUser = users.find((user) => user.id === id);
-    //   if (resultUser) {
-    //     res.status(400);
-    //     throw new Error("Esse id já existe");
-    //   }
-    // }
-
-    // if (buyer !== undefined) {
-    //   if (typeof buyer !== "string") {
-    //     res.status(400);
-    //     throw new Error("'buyer' inválido. Deve ser uma string");
-    //   }
-    //   if (buyer.length < 2) {
-    //     res.status(400);
-    //     throw new Error("'buyer' inválido. Deve ter no mínimo 2 caracteres");
-    //   }
-    // }
-
-    // if (email !== undefined) {
-    //   if (typeof email !== "string") {
-    //     res.status(400);
-    //     throw new Error("'email' inválido. Deve ser uma string");
-    //   }
-    //   const resultEmail = users.find((user) => user.email === email);
-    //   if (resultEmail) {
-    //     res.status(400);
-    //     throw new Error("Esse e-mail já existe");
-    //   }
-    // }
-
-    // if (password !== undefined) {
-    //   if (typeof password !== "string") {
-    //     res.statusCode = 400;
-    //     throw new Error("'password' inválido. Deve ser uma string");
-    //   }
-    //   if (
-    //     !password.match(
-    //       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,12}$/g
-    //     )
-    //   ) {
-    //     res.statusCode = 400;
-    //     throw new Error(
-    //       "'password' deve possuir entre 8 e 12 caracteres, com letras maiúsculas e minúsculas, no mínimo um número e um caractere especial"
-    //     );
-    //   }
-    // }
-    // const createAt = new Date().toISOString();
-
-    // const newUser = {
-    //   id: id,
-    //   name: name,
-    //   email: email,
-    //   password: password,
-    //   created_at: createAt,
-    // };
-    // // await db.raw(`
-    // //   INSERT INTO users (id, name, email, password, created_at)
-    // //   VALUES ("${id}", "${name}", "${email}", "${password}", "${createAt}");
-    // // `);
-
-    // await db("users").insert(newUser);
-
-    // res.status(201).send("Cadastro realizado com sucesso");
-  } catch (error) {
-    if (res.statusCode === 200) {
-      res.status(500);
-    }
-
-    if (error instanceof Error) {
-      res.send(error.message);
-    } else {
-      res.send("Erro inesperado");
-    }
-  }
-});
+//     if (error instanceof Error) {
+//       res.send(error.message);
+//     } else {
+//       res.send("Erro inesperado");
+//     }
+//   }
+// });
 
 // -- Delete Purchase By Id --
 
